@@ -132,7 +132,7 @@
 
       <!-- Launcher. The form keeps Ultraviolet's IDs so the proxy script still drives it. -->
       <form id="uv-form" class="card">
-        <input id="uv-search-engine" type="hidden" value="https://www.google.com/search?q=%s" />
+        <input id="uv-search-engine" type="hidden" value="https://search.brave.com/search?q=%s" />
         <input id="uv-address" class="url" type="text" placeholder="Type a website or a search" autocomplete="off" spellcheck="false" />
 
         <div class="modes" role="radiogroup" aria-label="How to open it">
@@ -142,16 +142,6 @@
           <button type="button" class="mode" role="radio" aria-checked="false" data-mode="inpage">In-page</button>
         </div>
         <div class="hint" id="hint"></div>
-
-        <div class="engine-row">
-          <span class="engine-label">Search with</span>
-          <select id="engine" class="dz engine-sel" aria-label="Search engine">
-            <option value="https://www.google.com/search?q=%s">Google</option>
-            <option value="https://duckduckgo.com/?q=%s">DuckDuckGo</option>
-            <option value="https://www.bing.com/search?q=%s">Bing</option>
-            <option value="https://search.brave.com/search?q=%s">Brave</option>
-          </select>
-        </div>
 
         <details class="disguise">
           <summary>Disguise the tab (optional)</summary>
@@ -211,7 +201,7 @@
       /* ---------- Config ---------- */
 
       // Background video. Paste a direct https .mp4 link, or leave empty for black.
-      const VIDEO_URL = "bg.mp4";
+      const VIDEO_URL = "https://files.catbox.moe/i96pjk.mp4";
       if (VIDEO_URL) {
         const v = document.getElementById("bgVideo");
         v.src = VIDEO_URL;
@@ -230,10 +220,11 @@
         inpage: "Loads the proxied page in a panel inside this launcher."
       };
 
+      // Fixed search engine (Brave is the most proxy-tolerant).
+      const SEARCH_ENGINE = "https://search.brave.com/search?q=%s";
+
       let mode = "blank";
       const addr = document.getElementById("uv-address");
-      const engineSel = document.getElementById("engine");
-      const searchEngineInput = document.getElementById("uv-search-engine");
       const hint = document.getElementById("hint");
       const status = document.getElementById("status");
       const dzTitle = document.getElementById("dzTitle");
@@ -257,11 +248,6 @@
           hint.textContent = hints[mode];
         });
       });
-
-      // Keep the hidden Ultraviolet search-engine field in sync with the dropdown.
-      function syncEngine() { searchEngineInput.value = engineSel.value; }
-      engineSel.addEventListener("change", syncEngine);
-      syncEngine();
 
       function say(msg, bad) {
         status.textContent = msg;
@@ -293,7 +279,7 @@
       // Turn user text into a proxied URL using Ultraviolet's own search() + config.
       async function toProxyUrl(text) {
         await registerSW();
-        const target = search(text, engineSel.value);
+        const target = search(text, SEARCH_ENGINE);
         const wispUrl =
           (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
         if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
